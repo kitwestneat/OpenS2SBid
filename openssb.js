@@ -39,3 +39,51 @@ var server = http.createServer(handle_req);
 server.listen(config.port, function(){
 	console.log("Server listening on: http://localhost:%s", config.port);
 });
+
+
+/*
+ *						
+{
+    "id": 100,
+    "imp": [
+        {
+            "id": 101,
+            "banner": {
+                "w": "320",
+                "h": "50"
+            },
+            "ext": { "sovrn": { "tagid": 316627 } }
+        },
+        {
+            "id": 102,
+            "banner": {
+                "w": "300",
+                "h": "250"
+            },
+            "ext": { "sovrn": { "tagid": 316060 } }
+        },
+        {
+            "id": 103,
+            "banner": {
+                "w": "320",
+                "h": "50"
+            },
+            "ext": { "sovrn": { "tagid": 316626 } }
+        },
+        {
+            "id": 104,
+            "banner": {
+                "w": "300",
+                "h": "250"
+            },
+            "ext": { "sovrn": { "tagid": 316053 } }
+        }
+    ],
+    "site": {
+        "domain": "runt-of-the-web.com",
+        "page": "/"
+    }
+}
+{"id":100,"imp":[{"id":101,"banner":{"w":"320","h":"50"},"ext":{"sovrn":{"tagid":316627}}},{"id":102,"banner":{"w":"300","h":"250"},"ext":{"sovrn":{"tagid":316060}}},{"id":103,"banner":{"w":"320","h":"50"},"ext":{"sovrn":{"tagid":316626}}},{"id":104,"banner":{"w":"300","h":"250"},"ext":{"sovrn":{"tagid":316053}}}],"site":{"domain":"runt-of-the-web.com","page":"/"}}
+
+*/

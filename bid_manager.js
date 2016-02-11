@@ -77,7 +77,7 @@ module.exports = {
 				promises = promises.map(ssb_utils.http_get);
 			}
 
-			// all normally shortcircuits on a fail, reflect waits for all promises to settle
+			// Promise.all normally shortcircuits on a fail, reflect waits for all promises to settle
 			adapter_promises.push(Promise.all(promises.map(function(p) { return p.reflect(); }))
 			.timeout(bid_timeout)
 			.then(function(resp) {
@@ -103,7 +103,7 @@ module.exports = {
 						ssb_utils.log(adapter_alias + ": error: no response found");
 						return false;
 					}
-						
+
 					if (!bresp.seatbid || !bresp.seatbid.length || !bresp.seatbid[0].bid)
 						return false;
 
