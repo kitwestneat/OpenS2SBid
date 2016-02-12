@@ -1,4 +1,4 @@
-var bid_url = 'http://ap.lijit.com/rtb/bid';
+var bid_url;
 
 // re to convert jsonp to straight json
 var re = /^callback\(([\s\S]*)\)$/;

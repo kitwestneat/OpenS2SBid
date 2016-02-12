@@ -42,8 +42,9 @@ module.exports = {
 		for (var i = 0; i < breq.imp.length; i++) {
 			var imp = breq.imp[i];
 
-			// imp.tagid is local placement, imp.ext.provider.tagid is remote placement
+			// imp.tagid is local (pub) placement id, imp.ext.provider.tagid is remote placement id
 			impid_to_tagid[imp.id] = imp.tagid;
+			console.log("impid: " + imp.id + " tagid: " + imp.tagid);
 
 			bid.imp.push({
 				id: imp.id,
@@ -58,7 +59,10 @@ module.exports = {
 
 		return bid;
 	},
-	bid: function(breq, callback) {
+	cpm_round: function(cpm) {
+		return cpm; // by default don't round CPM
+	},
+	bid: function(breq) {
 		var adapter_promises = [];
 
 		// the max bid for each placement (tagid)
@@ -69,6 +73,9 @@ module.exports = {
 			var impid_to_tagid = {};
 			var sbid = this.sanitize_bid(breq, adapter_alias, impid_to_tagid);
 			var promises = adapters[adapter_alias].bid(sbid, breq);
+
+			var cpm_round_fn = config.adapters[adapter_alias].cpm_round ||
+					config.cpm_round || this.cpm_round;
 
 			// promisify bare urls
 			if (typeof promises == "string") {
@@ -83,11 +90,12 @@ module.exports = {
 			.then(function(resp) {
 				// we got an array of response bodies from http_get
 				var time_taken = Date.now() - start_time;
-				ssb_utils.log(adapter_alias + ": bid completed in " + time_taken + " ms");
+				ssb_utils.log(adapter_alias + ": bid completed in " +
+						 time_taken + " ms");
 
 				console.log(JSON.stringify(resp, null, 4));
 
-				// go through the response bodies, convert to openrtb and then find the max one
+				// go thru response bodies, convert to openrtb and then find the max one
 				resp.forEach(function(p) {
 					if (!p.isFulfilled())
 						return false;
@@ -95,26 +103,33 @@ module.exports = {
 					var bresp = adapters[adapter_alias].process(p.value());
 
 					if (bresp && bresp.error) {
-						ssb_utils.log(adapter_alias + ": error: " + JSON.stringify(bresp.error));
+						ssb_utils.log(adapter_alias + ": error: " +
+								JSON.stringify(bresp.error));
 						return false;
 					}
 
 					if (!bresp) {
-						ssb_utils.log(adapter_alias + ": error: no response found");
+						ssb_utils.log(adapter_alias +
+							": error: no response found");
 						return false;
 					}
 
-					if (!bresp.seatbid || !bresp.seatbid.length || !bresp.seatbid[0].bid)
+					if (!bresp.seatbid || !bresp.seatbid.length ||
+							!bresp.seatbid[0].bid)
 						return false;
 
 					// find the highest imp bid for each placement
 					for (seat in bresp.seatbid) {
-						for (bid_idx in bresp.seatbid[seat]) {
-							var bid = bresp.seatbid[seat][bid_idx];
-							var tagid = impid_to_tagid[bid.impd];
+						for (bid_idx in bresp.seatbid[seat].bid) {
+							var bid = bresp.seatbid[seat].bid[bid_idx];
+							var tagid = impid_to_tagid[bid.impid];
 
-							if (!max_bids[tagid] || bid.price > max_bids[tagid].price)
+							bid.price = cpm_round_fn(bid.price);
+
+							if (!max_bids[tagid] || bid.price > max_bids[tagid].price) {
+								bid.id = adapter_alias + ":" + bid.id;
 								max_bids[tagid] = bid;
+							}
 						}
 					}
 				});
@@ -125,7 +140,15 @@ module.exports = {
 
 		// caller only wants the max bid for each placement
 		return Promise.all(adapter_promises).then(function() {
-			return max_bids;
+			var seatbids = [];
+
+			for (tag in max_bids)
+				seatbids.push(max_bids[tag]);
+
+			return {
+				id: breq.id,
+				seatbid: seatbids,
+			};
 		});
 	},
 }
