@@ -25,13 +25,13 @@ var bid_timeout;
 })();
 
 module.exports = {
-	sanitize_bid: function(breq, provider, impid_to_tagid) {
+	sanitize_bid: function(breq, provider, impid_to_bid) {
 		var bid = {
 			id: breq.id,
 			imp: [],
 			site: {
-				domain: breq.site.domain,
-				page: breq.site.page,
+				domain: (breq.site && breq.site.domain) || '',
+				page: (breq.site && breq.site.page) || '',
 			}
 		};
 
@@ -47,10 +47,9 @@ module.exports = {
 				continue;
 
 			// imp.tagid is local (pub) placement id, imp.ext.provider.tagid is remote placement id
-			impid_to_tagid[imp.id] = imp.tagid;
 			console.log("impid: " + imp.id + " tagid: " + imp.tagid);
 
-			bid.imp.push({
+			var bid_imp = {
 				id: imp.id,
 				banner: {
 					w: imp.banner.w,
@@ -59,7 +58,9 @@ module.exports = {
 				tagid: remote_tagid,
 				bidfloor: get_ext(imp, 'bidfloor') || imp.bidfloor,
 				ext: { local_tagid: imp.tagid }
-			});
+			};
+			impid_to_bid[imp.id] = bid_imp;
+			bid.imp.push(bid_imp);
 		}
 
 		if (bid.imp.length == 0)
@@ -77,10 +78,10 @@ module.exports = {
 		var max_bids = {};
 
 		var _ = this;
+		var impid_to_bid = {};
 		Object.keys(adapters).forEach(function (adapter_alias) {
 			var start_time = Date.now();
-			var impid_to_tagid = {};
-			var sbid = _.sanitize_bid(breq, adapter_alias, impid_to_tagid);
+			var sbid = _.sanitize_bid(breq, adapter_alias, impid_to_bid);
 
 			if (!sbid) {
 				// no placements defined for this adapter in the client request
@@ -111,7 +112,7 @@ module.exports = {
 			// Promise.all normally shortcircuits on a fail, reflect waits for all promises to settle
 			adapter_promises.push(Promise.all(promises.map(function(p) { return p.reflect(); }))
 			.timeout(bid_timeout)
-			.then(function(resp) {
+			.then(function( resp) {
 				// we got an array of response bodies from http_get
 				var time_taken = Date.now() - start_time;
 				ssb_utils.log(adapter_alias + ": bid completed in " +
@@ -146,12 +147,19 @@ module.exports = {
 					for (seat in bresp.seatbid) {
 						for (bid_idx in bresp.seatbid[seat].bid) {
 							var bid = bresp.seatbid[seat].bid[bid_idx];
-							var tagid = impid_to_tagid[bid.impid];
+							var req_bid = impid_to_bid[bid.impid];
+							var tagid = req_bid.ext.local_tagid;
 
 							bid.price = cpm_round_fn(bid.price);
 
 							if (!max_bids[tagid] || bid.price > max_bids[tagid].price) {
 								bid.id = adapter_alias + ":" + bid.id;
+								if (!bid.ext) 
+									bid.ext = {};
+								bid.ext["ssb_tagid"] = tagid;
+								bid.w = bid.w || req_bid.banner.w;
+								bid.h = bid.h || req_bid.banner.h;
+								
 								max_bids[tagid] = bid;
 							}
 						}

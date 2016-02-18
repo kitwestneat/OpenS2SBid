@@ -61,7 +61,7 @@ var ssb_client = function() {
 				else 
 					tagid = imps[bid.impid];
 
-				bid_retval[tagid] = { price: bid.price, size: { w: bid.w, h: bid.h } };
+				bid_retval[tagid] = bid;
 			});
 
 			br_map[bresp.id] = null;
