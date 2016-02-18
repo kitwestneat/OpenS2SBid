@@ -6,12 +6,43 @@ var config = require('./config');
 
 // testreq
 // http://localhost:8888/?callback=pbh_sovrn_process_bid&br=%7B%22id%22%3A100%2C%22imp%22%3A%5B%7B%22id%22%3A101%2C%22banner%22%3A%7B%22w%22%3A%22320%22%2C%22h%22%3A%2250%22%7D%2C%22tagid%22%3A316627%7D%2C%7B%22id%22%3A102%2C%22banner%22%3A%7B%22w%22%3A%22300%22%2C%22h%22%3A%22250%22%7D%2C%22tagid%22%3A316060%7D%2C%7B%22id%22%3A103%2C%22banner%22%3A%7B%22w%22%3A%22320%22%2C%22h%22%3A%2250%22%7D%2C%22tagid%22%3A316626%7D%2C%7B%22id%22%3A104%2C%22banner%22%3A%7B%22w%22%3A%22300%22%2C%22h%22%3A%22250%22%7D%2C%22tagid%22%3A316053%7D%5D%2C%22site%22%3A%7B%22domain%22%3A%22runt-of-the-web.com%22%2C%22page%22%3A%22%2F%22%7D%7D
-function handle_req(request, response) { try {
-	var html = '<html><head><style>body {background-color: black; color: white }</style><body>Got request:<br><pre>';
+function handle_req(request, response) {
+	try {
+		var parsed = url.parse(request.url, true);
+		var bid_request = JSON.parse(parsed.query.br);
+		var callback = parsed.query.callback || 'callback';
+		var debug = parsed.query.debug;
 
-	var parsed = url.parse(request.url, true);
-	var bid_request = JSON.parse(parsed.query.br);
-	var callback = parsed.query.callback || 'callback';
+	if (debug)
+		debug_req(response, bid_request, callback);
+	else
+		jsonp_req(response, bid_request, callback);
+
+	} catch(e) {
+		var msg = 'bad request url: ' + request.url + ' e: ' + e + "\n";
+		msg += e.stack + "\n";
+		console.log(msg);
+		response.statusCode = 500;
+		response.end(msg);
+	}
+}
+
+function jsonp_req(response, bid_request, callback) {
+	var jsonp = callback + "(";
+
+	bm.bid(bid_request)
+	.timeout(config.http_timeout)
+	.then(function(bid_response) {
+		jsonp += JSON.stringify(bid_response, null, 4);
+		jsonp += ')';
+		response.end(jsonp);
+	});
+}
+
+function debug_req(response, bid_request, callback) {
+	var black_on_white = "<style>body {background-color: black; color: white }</style>";
+	var html = '<html><head></head><body>Got request:<br><pre>';
+
 
 	html += "callback: " + callback + "\n";
 	html += "bid request: \n";
@@ -34,7 +65,7 @@ function handle_req(request, response) { try {
 		response.end(html);
 	});
 
-} catch(e) { console.log('bad request url: ' + request.url + ' e: ' + e); console.log(e.stack); response.statusCode = 500; response.end(); } }
+ }
 
 var server = http.createServer(handle_req);
 server.listen(config.port, function(){
