@@ -66,7 +66,23 @@ module.exports = {
 		var placement_id = decodeURIComponent(an_resp.callback_uid);
         console.log(placement_id);
         console.log(size_to_impid);
+
+        if (!size_to_impid[placement_id] || !size_to_impid[placement_id].sizes)
+            return { error: an_resp };
+
 		var imp_id = size_to_impid[placement_id].sizes[an_resp.result.width + 'x' + an_resp.result.height];
+        var iframe_html="<body><scr" + "ipt>";
+        iframe_html += "var ifrm = document.createElement('iframe');";
+        iframe_html += "ifrm.marginHeight = 0;";
+        iframe_html += "ifrm.marginWidth = 0;";
+        iframe_html += "ifrm.frameBorder = 0;";
+        iframe_html += "ifrm.sandbox = \"allow-scripts allow-same-origin allow-popups-to-escape-sandbox allow-popups allow-forms\";";
+        iframe_html += "ifrm.width = " + an_resp.result.width + ";";
+        iframe_html += "ifrm.height = " + an_resp.result.height + ";";
+        iframe_html += "ifrm.scrolling = \"no\";";
+        iframe_html += "ifrm.style.overflow = \"hidden\";";
+        iframe_html += "ifrm.src = '" + an_resp.result.ad + "';";
+        iframe_html += "document.body.appendChild(ifrm);</scr" + "ipt></body>";
 
 		return {
 			id: size_to_impid['id'],
@@ -74,7 +90,7 @@ module.exports = {
 				id: imp_id,
 				impid: imp_id,
 				price: an_resp.result.cpm / (100*100),
-				nurl: an_resp.result.ad,
+				adm: iframe_html,
 			}] }]
 		};
 	},
