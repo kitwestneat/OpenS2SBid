@@ -28,12 +28,13 @@ function handle_req(request, response) { try {
 	.timeout(config.http_timeout)
 	.then(function(bid_response) {
 		html += "\nbid response: \n";
-		html += JSON.stringify(bid_response, null, 4);
+		html += JSON.stringify(bid_response, null, 4)
+			.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 		html += '</pre></body></html>';
 		response.end(html);
 	});
 
-} catch(e) { console.log('bad request url: ' + request.url + ' e: ' + e); response.statusCode = 500; response.end(); } }
+} catch(e) { console.log('bad request url: ' + request.url + ' e: ' + e); console.log(e.stack); response.statusCode = 500; response.end(); } }
 
 var server = http.createServer(handle_req);
 server.listen(config.port, function(){
@@ -52,8 +53,11 @@ server.listen(config.port, function(){
                 "w": "320",
                 "h": "50"
             },
-			"tagid": "leaderboard ATF",
-            "ext": { "sovrn": { "tagid": 316627 } }
+			"tagid": "div-gpt-ad-1374154100505-4",
+            "ext": {
+				"sovrn": { "tagid": 316627 },
+				"aol": { "tagid": '9599.1/3611252/0/225' },
+				}
         },
         {
             "id": 102,
@@ -61,8 +65,12 @@ server.listen(config.port, function(){
                 "w": "300",
                 "h": "250"
             },
-			"tagid": "leaderboard ATF",
-            "ext": { "sovrn": { "tagid": 316060 } }
+			"tagid": "div-gpt-ad-1374154100505-4",
+            "ext": {
+				"sovrn": { "tagid": 316060 },
+				"aol": { "tagid": '9599.1/3611253/0/170' },
+				"appnexus": { "tagid": 5797696 },
+			}
         },
         {
             "id": 103,
@@ -70,8 +78,11 @@ server.listen(config.port, function(){
                 "w": "320",
                 "h": "50"
             },
-			"tagid": "leaderboard BTF",
-            "ext": { "sovrn": { "tagid": 316626 } }
+			"tagid": "div-gpt-ad-1374154100505-5",
+            "ext": {
+				"sovrn": { "tagid": 316626 },
+				"aol": { "tagid": '9599.1/3617677/0/170' },
+				}
         },
         {
             "id": 104,
@@ -79,8 +90,11 @@ server.listen(config.port, function(){
                 "w": "300",
                 "h": "250"
             },
-			"tagid": "leaderboard BTF",
-            "ext": { "sovrn": { "tagid": 316053 } }
+			"tagid": "div-gpt-ad-1374154100505-5",
+            "ext": {
+				"sovrn": { "tagid": 316053 },
+				"aol": { "tagid": '9599.1/3617719/0/225' },
+			}
         }
     ],
     "site": {
@@ -88,7 +102,7 @@ server.listen(config.port, function(){
         "page": "/"
     }
 }
-{"id":100,"imp":[{"id":101,"banner":{"w":"320","h":"50"},"tagid":"leaderboard ATF","ext":{"sovrn":{"tagid":316627}}},{"id":102,"banner":{"w":"300","h":"250"},"tagid":"leaderboard ATF","ext":{"sovrn":{"tagid":316060}}},{"id":103,"banner":{"w":"320","h":"50"},"tagid":"leaderboard BTF","ext":{"sovrn":{"tagid":316626}}},{"id":104,"banner":{"w":"300","h":"250"},"tagid":"leaderboard BTF","ext":{"sovrn":{"tagid":316053}}}],"site":{"domain":"runt-of-the-web.com","page":"/"}}
 
 
+{"id":100,"imp":[{"id":101,"banner":{"w":"320","h":"50"},"tagid":"div-gpt-ad-1374154100505-4","ext":{"sovrn":{"tagid":316627},"aol":{"tagid":"9599.1/3611252/0/225"}}},{"id":102,"banner":{"w":"300","h":"250"},"tagid":"div-gpt-ad-1374154100505-4","ext":{"sovrn":{"tagid":316060},"aol":{"tagid":"9599.1/3611253/0/170"},"appnexus":{"tagid":5797696}}},{"id":103,"banner":{"w":"320","h":"50"},"tagid":"div-gpt-ad-1374154100505-5","ext":{"sovrn":{"tagid":316626},"aol":{"tagid":"9599.1/3617677/0/170"}}},{"id":104,"banner":{"w":"300","h":"250"},"tagid":"div-gpt-ad-1374154100505-5","ext":{"sovrn":{"tagid":316053},"aol":{"tagid":"9599.1/3617719/0/225"}}}],"site":{"domain":"runt-of-the-web.com","page":"/"}}
 */

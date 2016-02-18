@@ -41,6 +41,10 @@ module.exports = {
 
 		for (var i = 0; i < breq.imp.length; i++) {
 			var imp = breq.imp[i];
+			var remote_tagid = get_ext(imp, 'tagid');
+
+			if (!remote_tagid)
+				continue;
 
 			// imp.tagid is local (pub) placement id, imp.ext.provider.tagid is remote placement id
 			impid_to_tagid[imp.id] = imp.tagid;
@@ -52,10 +56,14 @@ module.exports = {
 					w: imp.banner.w,
 					h: imp.banner.h,
 				},
-				tagid: get_ext(imp, 'tagid'),
+				tagid: remote_tagid,
 				bidfloor: get_ext(imp, 'bidfloor') || imp.bidfloor,
+				ext: { local_tagid: imp.tagid }
 			});
 		}
+
+		if (bid.imp.length == 0)
+			return false;
 
 		return bid;
 	},
@@ -68,20 +76,36 @@ module.exports = {
 		// the max bid for each placement (tagid)
 		var max_bids = {};
 
-		for (var adapter_alias in adapters) {
+		var _ = this;
+		Object.keys(adapters).forEach(function (adapter_alias) {
 			var start_time = Date.now();
 			var impid_to_tagid = {};
-			var sbid = this.sanitize_bid(breq, adapter_alias, impid_to_tagid);
-			var promises = adapters[adapter_alias].bid(sbid, breq);
+			var sbid = _.sanitize_bid(breq, adapter_alias, impid_to_tagid);
+
+			if (!sbid) {
+				// no placements defined for this adapter in the client request
+				return;
+			}
+
+			// any state that the adapters might need
+			var bid_state = {};
+			var promises = adapters[adapter_alias].bid(sbid, breq, bid_state);
 
 			var cpm_round_fn = config.adapters[adapter_alias].cpm_round ||
-					config.cpm_round || this.cpm_round;
+					config.cpm_round || _.cpm_round;
+
+			// XXX fake sovrn bids since they are just shooting blanks at the moment
+			var http_get = ssb_utils.real_http_get;
+			switch (adapter_alias) {
+				case "sovrn": http_get = ssb_utils.fake_sovrn_http_get; break;
+				case "appnexus": http_get = ssb_utils.fake_appnexus_http_get; break;
+			}
 
 			// promisify bare urls
 			if (typeof promises == "string") {
-				promises = [ ssb_utils.http_get(promises) ];
+				promises = [ http_get(promises) ];
 			} else if (Array.isArray(promises) && typeof promises[0] == "string") {
-				promises = promises.map(ssb_utils.http_get);
+				promises = promises.map(http_get);
 			}
 
 			// Promise.all normally shortcircuits on a fail, reflect waits for all promises to settle
@@ -93,14 +117,14 @@ module.exports = {
 				ssb_utils.log(adapter_alias + ": bid completed in " +
 						 time_taken + " ms");
 
-				console.log(JSON.stringify(resp, null, 4));
-
 				// go thru response bodies, convert to openrtb and then find the max one
 				resp.forEach(function(p) {
 					if (!p.isFulfilled())
 						return false;
 
-					var bresp = adapters[adapter_alias].process(p.value());
+					var p_val = p.value();
+					bid_state._url = p_val.url;
+					var bresp = adapters[adapter_alias].process(p_val.body, bid_state);
 
 					if (bresp && bresp.error) {
 						ssb_utils.log(adapter_alias + ": error: " +
@@ -134,9 +158,10 @@ module.exports = {
 					}
 				});
 			}).catch(Promise.TimeoutError, function(e) {
+				var time_taken = Date.now() - start_time;
 				ssb_utils.log(adapter_alias + ": bid timeout after " + time_taken + " ms");
 			}));
-		}
+		});
 
 		// caller only wants the max bid for each placement
 		return Promise.all(adapter_promises).then(function() {

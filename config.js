@@ -3,9 +3,8 @@ module.exports = {
 	http_timeout: 5000,
 	bid_timeout: 1000,
 	adapters: { 
-		'sovrn': {
-			adapter: 'openrtb',
-			bid_url: 'http://adintegration.lijit.com/rtb/bid',
-		}
+		'aol': {},
+		'sovrn': { bid_url: 'http://adintegration.lijit.com/rtb/bid' },
+		'appnexus': {},
 	},
 }
