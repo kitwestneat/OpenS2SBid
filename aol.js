@@ -16,6 +16,9 @@ module.exports = {
 	process: function(body, bid_state) {
 		var bresp = JSON.parse(body);
 
+		if (!bresp || !bresp.seatbid || !bresp.seatbid[0] || !bresp.seatbid[0].bid || !bresp.seatbid[0].bid[0])
+			return false;
+
 		var bid = bresp.seatbid[0].bid[0];
 		bid.id = bid.impid;
 		bid.impid = bid_state.url_to_impid[bid_state._url];
