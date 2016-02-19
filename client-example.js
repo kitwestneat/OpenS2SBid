@@ -21,7 +21,9 @@ var ssb_client = function() {
 			ad_units.forEach(function(unit) {
 				var ext = {};
 				for (var provider in unit.placements)
-					ext[provider] = { tagid: unit.placements[provider] };
+					ext[provider] = {
+						tagid: unit.placements[provider]
+					};
 
 				unit.sizes.forEach(function(sizes) {
 					if (!Array.isArray(sizes))
@@ -30,7 +32,10 @@ var ssb_client = function() {
 					sizes.forEach(function(width, height) {
 						bid_request.imp.push({
 							id: imp_id,
-							banner: { w: width, h: height },
+							banner: {
+								w: width,
+								h: height
+							},
 							ext: ext,
 							tagid: unit.tagid,
 						});
@@ -58,7 +63,7 @@ var ssb_client = function() {
 				var tagid;
 				if (bid.ext.ssb_tagid)
 					tagid = bid.ext.ssb_tagid;
-				else 
+				else
 					tagid = imps[bid.impid];
 
 				bid_retval[tagid] = bid;

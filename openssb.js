@@ -13,12 +13,12 @@ function handle_req(request, response) {
 		var callback = parsed.query.callback || 'callback';
 		var debug = parsed.query.debug;
 
-	if (debug)
-		debug_req(response, bid_request, callback);
-	else
-		jsonp_req(response, bid_request, callback);
+		if (debug)
+			debug_req(response, bid_request, callback);
+		else
+			jsonp_req(response, bid_request, callback);
 
-	} catch(e) {
+	} catch (e) {
 		var msg = 'bad request url: ' + request.url + ' e: ' + e + "\n";
 		msg += e.stack + "\n";
 		console.log(msg);
@@ -31,12 +31,12 @@ function jsonp_req(response, bid_request, callback) {
 	var jsonp = callback + "(";
 
 	bm.bid(bid_request)
-	.timeout(config.http_timeout)
-	.then(function(bid_response) {
-		jsonp += JSON.stringify(bid_response, null, 4);
-		jsonp += ')';
-		response.end(jsonp);
-	});
+		.timeout(config.http_timeout)
+		.then(function(bid_response) {
+			jsonp += JSON.stringify(bid_response, null, 4);
+			jsonp += ')';
+			response.end(jsonp);
+		});
 }
 
 function debug_req(response, bid_request, callback) {
@@ -56,19 +56,19 @@ function debug_req(response, bid_request, callback) {
 	// return winner to client
 
 	bm.bid(bid_request)
-	.timeout(config.http_timeout)
-	.then(function(bid_response) {
-		html += "\nbid response: \n";
-		html += JSON.stringify(bid_response, null, 4)
-			.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-		html += '</pre></body></html>';
-		response.end(html);
-	});
+		.timeout(config.http_timeout)
+		.then(function(bid_response) {
+			html += "\nbid response: \n";
+			html += JSON.stringify(bid_response, null, 4)
+				.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+			html += '</pre></body></html>';
+			response.end(html);
+		});
 
- }
+}
 
 var server = http.createServer(handle_req);
-server.listen(config.port, function(){
+server.listen(config.port, function() {
 	console.log("Server listening on: http://localhost:%s", config.port);
 });
 

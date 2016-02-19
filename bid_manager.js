@@ -1,5 +1,5 @@
 var Promise = require("bluebird");
-var ssb_utils  = require("./ssb_utils");
+var ssb_utils = require("./ssb_utils");
 
 var config = require('./config');
 
@@ -57,7 +57,9 @@ module.exports = {
 				},
 				tagid: remote_tagid,
 				bidfloor: get_ext(imp, 'bidfloor') || imp.bidfloor,
-				ext: { local_tagid: imp.tagid }
+				ext: {
+					local_tagid: imp.tagid
+				}
 			};
 			impid_to_bid[imp.id] = bid_imp;
 			bid.imp.push(bid_imp);
@@ -79,7 +81,7 @@ module.exports = {
 
 		var _ = this;
 		var impid_to_bid = {};
-		Object.keys(adapters).forEach(function (adapter_alias) {
+		Object.keys(adapters).forEach(function(adapter_alias) {
 			var start_time = Date.now();
 			var sbid = _.sanitize_bid(breq, adapter_alias, impid_to_bid);
 
@@ -93,82 +95,88 @@ module.exports = {
 			var promises = adapters[adapter_alias].bid(sbid, breq, bid_state);
 
 			var cpm_round_fn = config.adapters[adapter_alias].cpm_round ||
-					config.cpm_round || _.cpm_round;
+				config.cpm_round || _.cpm_round;
 
 			// XXX fake sovrn bids since they are just shooting blanks at the moment
 			var http_get = ssb_utils.real_http_get;
 			switch (adapter_alias) {
-				case "sovrn": http_get = ssb_utils.fake_sovrn_http_get; break;
-				case "appnexus": http_get = ssb_utils.fake_appnexus_http_get; break;
+				case "sovrn":
+					http_get = ssb_utils.fake_sovrn_http_get;
+					break;
+				case "appnexus":
+					http_get = ssb_utils.fake_appnexus_http_get;
+					break;
 			}
 
 			// promisify bare urls
 			if (typeof promises == "string") {
-				promises = [ http_get(promises) ];
+				promises = [http_get(promises)];
 			} else if (Array.isArray(promises) && typeof promises[0] == "string") {
 				promises = promises.map(http_get);
 			}
 
 			// Promise.all normally shortcircuits on a fail, reflect waits for all promises to settle
-			adapter_promises.push(Promise.all(promises.map(function(p) { return p.reflect(); }))
-			.timeout(bid_timeout)
-			.then(function( resp) {
-				// we got an array of response bodies from http_get
-				var time_taken = Date.now() - start_time;
-				ssb_utils.log(adapter_alias + ": bid completed in " +
-						 time_taken + " ms");
+			adapter_promises.push(Promise.all(promises.map(function(p) {
+					return p.reflect();
+				}))
+				.timeout(bid_timeout)
+				.then(function(resp) {
+					// we got an array of response bodies from http_get
+					var time_taken = Date.now() - start_time;
+					ssb_utils.log(adapter_alias + ": bid completed in " +
+						time_taken + " ms");
 
-				// go thru response bodies, convert to openrtb and then find the max one
-				resp.forEach(function(p) {
-					if (!p.isFulfilled())
-						return false;
+					// go thru response bodies, convert to openrtb and then find the max one
+					resp.forEach(function(p) {
+						if (!p.isFulfilled())
+							return false;
 
-					var p_val = p.value();
-					bid_state._url = p_val.url;
-					var bresp = adapters[adapter_alias].process(p_val.body, bid_state);
+						var p_val = p.value();
+						bid_state._url = p_val.url;
+						var bresp = adapters[adapter_alias].process(p_val.body, bid_state);
 
-					if (bresp && bresp.error) {
-						ssb_utils.log(adapter_alias + ": error: " +
+						if (bresp && bresp.error) {
+							ssb_utils.log(adapter_alias + ": error: " +
 								JSON.stringify(bresp.error));
-						return false;
-					}
+							return false;
+						}
 
-					if (!bresp) {
-						ssb_utils.log(adapter_alias +
-							": error: no response found");
-						return false;
-					}
+						if (!bresp) {
+							ssb_utils.log(adapter_alias +
+								": error: no response found");
+							return false;
+						}
 
-					if (!bresp.seatbid || !bresp.seatbid.length ||
+						if (!bresp.seatbid || !bresp.seatbid.length ||
 							!bresp.seatbid[0].bid)
-						return false;
+							return false;
 
-					// find the highest imp bid for each placement
-					for (seat in bresp.seatbid) {
-						for (bid_idx in bresp.seatbid[seat].bid) {
-							var bid = bresp.seatbid[seat].bid[bid_idx];
-							var req_bid = impid_to_bid[bid.impid];
-							var tagid = req_bid.ext.local_tagid;
+						// find the highest imp bid for each placement
+						for (seat in bresp.seatbid) {
+							for (bid_idx in bresp.seatbid[seat].bid) {
+								var bid = bresp.seatbid[seat].bid[bid_idx];
+								var req_bid = impid_to_bid[bid.impid];
+								var tagid = req_bid.ext.local_tagid;
 
-							bid.price = cpm_round_fn(bid.price);
+								bid.price = cpm_round_fn(bid.price);
 
-							if (!max_bids[tagid] || bid.price > max_bids[tagid].price) {
-								bid.id = adapter_alias + ":" + bid.id;
-								if (!bid.ext) 
-									bid.ext = {};
-								bid.ext["ssb_tagid"] = tagid;
-								bid.w = bid.w || req_bid.banner.w;
-								bid.h = bid.h || req_bid.banner.h;
-								
-								max_bids[tagid] = bid;
+								if (!max_bids[tagid] || bid.price > max_bids[tagid].price) {
+									bid.id = adapter_alias + ":" + bid.id;
+									if (!bid.ext)
+										bid.ext = {};
+									bid.ext["ssb_tagid"] = tagid;
+									bid.w = bid.w || req_bid.banner.w;
+									bid.h = bid.h || req_bid.banner.h;
+
+									max_bids[tagid] = bid;
+								}
 							}
 						}
-					}
-				});
-			}).catch(Promise.TimeoutError, function(e) {
-				var time_taken = Date.now() - start_time;
-				ssb_utils.log(adapter_alias + ": bid timeout after " + time_taken + " ms");
-			}));
+					});
+				}).catch(Promise.TimeoutError, function(e) {
+					var time_taken = Date.now() - start_time;
+					ssb_utils.log(adapter_alias + ": bid timeout after " + time_taken + " ms");
+				}));
 		});
 
 		// caller only wants the max bid for each placement

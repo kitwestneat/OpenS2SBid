@@ -4,7 +4,7 @@ module.exports = {
 	bid: function(breq, full_breq, bid_state) {
 		var urls = [];
 		bid_state.url_to_impid = {};
-        for (var i = 0; i < breq.imp.length; i++) {
+		for (var i = 0; i < breq.imp.length; i++) {
 			// aol doesn't use any client provided IDs in their response so we need to map the request URL with the imp ID
 			var url = bid_url + breq.imp[i].tagid + '/;noperf=1;alias=;cmd=bid;cors=yes;';
 			urls.push(url);
