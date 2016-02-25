@@ -10,8 +10,8 @@ var ssb_utils = {
 		// might log to server eventually
 		console.log(msg);
 	},
-	real_http_get: function(url) {
-		return request_get(url)
+	real_http_get: function(url, headers) {
+		return request_get({url: url, headers: headers})
 			.timeout(config.http_timeout)
 			.then(function(arr) {
 				var response = arr[0],

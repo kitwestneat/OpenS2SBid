@@ -13,8 +13,14 @@ function handle_req(request, response) {
 		var callback = parsed.query.callback || 'callback';
 		var debug = parsed.query.debug;
 
+		if (!bid_request.device)
+			bid_request.device = {};
+
+		bid_request.device.ua = request.headers['user-agent'];
+		bid_request.device.ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
+
 		if (debug)
-			debug_req(response, bid_request, callback);
+			debug_req(response, request.headers, bid_request, callback);
 		else
 			jsonp_req(response, bid_request, callback);
 
@@ -39,11 +45,12 @@ function jsonp_req(response, bid_request, callback) {
 		});
 }
 
-function debug_req(response, bid_request, callback) {
+function debug_req(response, headers, bid_request, callback) {
 	var black_on_white = "<style>body {background-color: black; color: white }</style>";
 	var html = '<html><head></head><body>Got request:<br><pre>';
 
 
+	html += "headers: " + JSON.stringify(headers, null, 4) + "\n";
 	html += "callback: " + callback + "\n";
 	html += "bid request: \n";
 	html += JSON.stringify(bid_request, null, 4);

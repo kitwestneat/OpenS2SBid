@@ -29,11 +29,22 @@ module.exports = {
 		var bid = {
 			id: breq.id,
 			imp: [],
-			site: {
-				domain: (breq.site && breq.site.domain) || '',
-				page: (breq.site && breq.site.page) || '',
-			}
 		};
+
+		if (breq.site) {
+			bid.site = {
+				domain: breq.site.domain,
+				page: breq.site.page,
+				ref: breq.site.ref,
+			}
+		}
+
+		if (breq.device) {
+			bid.device = {
+				ua: breq.device.ua,
+				ip: breq.device.ip,
+			}
+		}
 
 		var get_ext = function(obj, field) {
 			return obj && obj.ext && obj.ext[provider] && obj.ext[provider][field];
@@ -98,15 +109,21 @@ module.exports = {
 				config.cpm_round || _.cpm_round;
 
 			// XXX fake sovrn bids since they are just shooting blanks at the moment
-			var http_get = ssb_utils.real_http_get;
+			var http_get_fn = ssb_utils.real_http_get;
 			switch (adapter_alias) {
 				case "sovrn":
-					http_get = ssb_utils.fake_sovrn_http_get;
+					http_get_fn = ssb_utils.fake_sovrn_http_get;
 					break;
 				case "appnexus":
-					http_get = ssb_utils.fake_appnexus_http_get;
+					http_get_fn = ssb_utils.fake_appnexus_http_get;
 					break;
 			}
+			var http_get;
+
+			if (sbid.device.ua)
+				http_get = function(url) { return http_get_fn(url, { 'User-Agent' : sbid.device.ua }); };
+			else
+				http_get = http_get_fn;
 
 			// promisify bare urls
 			if (typeof promises == "string") {
