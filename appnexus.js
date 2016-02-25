@@ -61,13 +61,13 @@ module.exports = {
 			var an_resp = JSON.parse(json_str);
 		} catch (e) {
 			return {
-				error: 'error: ' + e + ' stack: ' + e.stack
+				error: 'error: ' + e + "\nstack: " + e.stack + "\njson_str: " + json_str
 			};
 		}
 
 		if (!an_resp.result)
 			return {
-				error: an_resp
+				error: 'no result object in ' + JSON.stringify(an_resp, null, 4)
 			};
 
 		var placement_id = decodeURIComponent(an_resp.callback_uid);
@@ -76,7 +76,7 @@ module.exports = {
 
 		if (!size_to_impid[placement_id] || !size_to_impid[placement_id].sizes)
 			return {
-				error: an_resp
+				error: 'unknown placement id ' + placement_id + ' resp: ' + JSON.stringify(an_resp, null, 4)
 			};
 
 		var imp_id = size_to_impid[placement_id].sizes[an_resp.result.width + 'x' + an_resp.result.height];
