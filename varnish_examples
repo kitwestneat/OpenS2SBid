@@ -1,7 +1,7 @@
-backend ssb {                                                                                                                          
-  .host = "127.0.0.1";                                                                                                                 
+backend ssb {
+  .host = "127.0.0.1";
   .port = "8888";
-}       
+}
 if (req.url ~ "^/ssb/partner") {
 	return(synth(750, "cookie-sync"));
 }
@@ -9,9 +9,9 @@ if (req.url ~ "^/ssb/bid") {
 	set req.backend_hint = ssb;
 	return(pass);
 }
-sub vcl_synth {             
+sub vcl_synth {
     if (resp.status == 750) {
-        set resp.http.set-cookie = regsub(req.url, "^.*id=([^&]*)&uid=([^&]*).*$", "p_\1=\2; Expires=" + (now+3d) + "; Path=/");
+        set resp.http.set-cookie = regsub(req.url, "^.*id=([^&]*)(&.*)*&uid=([^&]*).*", "p_\1=\3; Expires=" + (now+3d) + "; Path=/");
         set resp.status = 200;
         return(deliver);
     }
