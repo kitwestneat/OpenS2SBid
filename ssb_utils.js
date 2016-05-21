@@ -1,5 +1,10 @@
 var Promise = require("bluebird");
-var request_get = Promise.promisify(require('request').get, {
+var request = require('request');
+var request_get = Promise.promisify(request.get, {
+	multiArgs: true
+});
+
+var request_post = Promise.promisify(request.post, {
 	multiArgs: true
 });
 
@@ -10,6 +15,7 @@ var ssb_utils = {
 		// might log to server eventually
 		console.log(msg);
 	},
+	http_post: request_post,
 	real_http_get: function(url, headers) {
 		return request_get({url: url, headers: headers})
 			.timeout(config.http_timeout)
