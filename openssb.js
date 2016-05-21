@@ -19,6 +19,8 @@ function handle_req(request, response) {
 		bid_request.device.ua = request.headers['user-agent'];
 		bid_request.device.ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
 
+		console.log("request received from: " + bid_request.device.ip);
+
 		if (debug)
 			debug_req(response, request.headers, bid_request, callback);
 		else

@@ -98,12 +98,20 @@ module.exports = {
 
 			if (!sbid) {
 				// no placements defined for this adapter in the client request
+				console.log("no sbid: " + adapter_alias);
 				return;
 			}
 
 			// any state that the adapters might need
 			var bid_state = {};
-			var promises = adapters[adapter_alias].bid(sbid, breq, bid_state);
+			try {
+				var promises = adapters[adapter_alias].bid(sbid, breq, bid_state);
+			} catch (e) {
+				console.log("adapter " + adapter_alias + " error:" );
+				console.log(e);
+				return;
+			}
+			console.log("promises from " + adapter_alias + ": " + promises);
 
 			var cpm_round_fn = config.adapters[adapter_alias].cpm_round ||
 				config.cpm_round || _.cpm_round;
@@ -134,7 +142,11 @@ module.exports = {
 
 			// Promise.all normally shortcircuits on a fail, reflect waits for all promises to settle
 			adapter_promises.push(Promise.all(promises.map(function(p) {
-					return p.reflect();
+					try {
+						return p.reflect();
+					} catch(e) {
+						console.log("error with ", adapter_alias, e);
+					}
 				}))
 				.timeout(bid_timeout)
 				.then(function(resp) {
@@ -149,6 +161,7 @@ module.exports = {
 							return false;
 
 						var p_val = p.value();
+						console.log(adapter_alias, 'response', p_val);
 						bid_state._url = p_val.url;
 						var bresp = adapters[adapter_alias].process(p_val.body, bid_state);
 

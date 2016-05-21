@@ -6,7 +6,7 @@ var re = /^callback\(([\s\S]*)\)$/;
 module.exports = {
 	bid: function(breq, full_breq) {
 		var full_url = bid_url + '?br=' + JSON.stringify(breq);
-		console.log(full_url);
+		//console.log(full_url);
 
 		return full_url;
 	},
