@@ -15,9 +15,16 @@ module.exports = {
 	},
 	process: function(body, bid_state) {
 		var bresp = JSON.parse(body);
+		//console.log(body);
 
-		if (!bresp || !bresp.seatbid || !bresp.seatbid[0] || !bresp.seatbid[0].bid || !bresp.seatbid[0].bid[0])
+		if (!bresp || !bresp.seatbid)
 			return false;
+
+		if (!bresp.seatbid[0] || !bresp.seatbid[0].bid || !bresp.seatbid[0].bid[0])
+			return {
+				id: bresp.id,
+				seatbid: [{ bid: [{ id: bresp.id, impid: bid_state.url_to_impid[bid_state._url], price: 0 }]}]
+			};
 
 		var bid = bresp.seatbid[0].bid[0];
 		bid.id = bid.impid;
