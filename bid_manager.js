@@ -60,9 +60,9 @@ module.exports = {
 			if (!remote_tagid)
 				continue;
 
-			// imp.tagid is local (pub) placement id, imp.ext.provider.tagid is remote placement id
-			console.log("impid: " + imp.id + " tagid: " + imp.tagid);
+			//console.log("impid: " + imp.id + " tagid: " + imp.tagid);
 
+			// imp.tagid is local (pub) placement id, imp.ext.provider.tagid is remote placement id
 			var bid_imp = {
 				id: imp.id,
 				banner: {
@@ -133,7 +133,6 @@ module.exports = {
 				console.log(e);
 				return;
 			}
-			console.log("promises from " + adapter_alias + ": " + promises);
 
 			var cpm_round_fn = config.adapters[adapter_alias].cpm_round ||
 				config.cpm_round || _.cpm_round;
@@ -183,9 +182,20 @@ module.exports = {
 							return false;
 
 						var p_val = p.value();
-						console.log(adapter_alias, 'response', p_val);
+						/*
+						if (adapter_alias == 'pulsepoint')
+							console.log('pp resp', p_val);
+							*/
+						if (Array.isArray(p_val))
+							p_val = p_val[0];
+
 						bid_state._url = p_val.url;
-						var bresp = adapters[adapter_alias].process(p_val.body, bid_state);
+						try {
+							var bresp = adapters[adapter_alias].process(p_val.body, bid_state);
+						} catch(e) {
+							console.log(e.stack());
+							bresp = { error: e.toString() };
+						}
 
 						if (bresp && bresp.error) {
 							ssb_utils.log(adapter_alias + ": error: " +
@@ -217,6 +227,7 @@ module.exports = {
 									if (!bid.ext)
 										bid.ext = {};
 									bid.ext["ssb_tagid"] = tagid;
+									bid.ext["ssb_provider"] = adapter_alias;
 									bid.w = bid.w || req_bid.banner.w;
 									bid.h = bid.h || req_bid.banner.h;
 
@@ -231,16 +242,16 @@ module.exports = {
 				}));
 		});
 
-		// caller only wants the max bid for each placement
+		// we send the max bid for each placement
 		return Promise.all(adapter_promises).then(function() {
-			var seatbids = [];
+			var bids = [];
 
 			for (tag in max_bids)
-				seatbids.push(max_bids[tag]);
+				bids.push(max_bids[tag]);
 
 			return {
 				id: breq.id,
-				seatbid: seatbids,
+				seatbid: [{bid: bids }],
 			};
 		});
 	},
