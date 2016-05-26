@@ -1,7 +1,7 @@
 var Promise = require("bluebird");
 var ssb_utils = require("./ssb_utils");
 
-var config = require('./config');
+var config = require('./local/config');
 
 var adapters = {};
 var bid_timeout;

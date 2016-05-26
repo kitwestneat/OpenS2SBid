@@ -8,7 +8,7 @@ var request_post = Promise.promisify(request.post, {
 	multiArgs: true
 });
 
-var config = require('./config');
+var config = require('./local/config');
 
 var ssb_utils = {
 	ts: function() {

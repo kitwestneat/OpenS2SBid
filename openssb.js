@@ -2,7 +2,7 @@ var http = require('http');
 var url = require('url');
 var bm = require('./bid_manager');
 
-var config = require('./config');
+var config = require('./local/config');
 
 var req_count = 0;
 var req_start = Date.now();
