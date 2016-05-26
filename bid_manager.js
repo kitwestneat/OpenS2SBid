@@ -101,7 +101,8 @@ module.exports = {
 		if (bid_headers.cookie)
 			bid_headers.cookie.split(";").forEach(function(c) {
 				var k_v = c.split("=");
-				cookies[k_v[0].trim()] = k_v[1].trim();
+                if (k_w.length > 1)
+                    cookies[k_v[0].trim()] = k_v[1].trim();
 			});
 		//console.log("cookies", cookies);
 
