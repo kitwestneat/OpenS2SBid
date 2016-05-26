@@ -1,0 +1,14 @@
+# install at /etc/systemd/system/
+
+[Service]
+ExecStart=/bin/node /opt/OpenS2SBid//openssb.js
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=openssb
+User=apache
+Group=apache
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
