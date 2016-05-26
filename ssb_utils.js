@@ -11,6 +11,9 @@ var request_post = Promise.promisify(request.post, {
 var config = require('./config');
 
 var ssb_utils = {
+	ts: function() {
+		return Math.floor(Date.now() / 1000);
+	},
 	log: function(msg) {
 		// might log to server eventually
 		console.log(msg);

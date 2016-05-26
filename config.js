@@ -6,7 +6,8 @@ module.exports = {
 		'aol': {},
 		'appnexus': {},
 		'pulsepoint': {
-			bid_url: 'http://rts.lga.contextweb.com/rt-seller/bid/test/openrtb/pbhnetwork'
+			bid_url: 'http://rts.lga.contextweb.com/rt-seller/bid/test/openrtb/pbhnetwork',
+			qps_limit: 500
 		},
 		'sovrn': {
 			bid_url: 'http://adintegration.lijit.com/rtb/bid'
