@@ -19,12 +19,11 @@ function handle_req(request, response) {
 		bid_request.device.ua = request.headers['user-agent'];
 		bid_request.device.ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
 
-		console.log("request received from: " + bid_request.device.ip);
-
+		response.setHeader('Cache-Control', 'no-cache');
 		if (debug)
 			debug_req(response, request.headers, bid_request, callback);
 		else
-			jsonp_req(response, bid_request, callback);
+			jsonp_req(response, request.headers, bid_request, callback);
 
 	} catch (e) {
 		var msg = 'bad request url: ' + request.url + ' e: ' + e + "\n";
@@ -35,10 +34,10 @@ function handle_req(request, response) {
 	}
 }
 
-function jsonp_req(response, bid_request, callback) {
+function jsonp_req(response, bid_headers, bid_request, callback) {
 	var jsonp = callback + "(";
 
-	bm.bid(bid_request)
+	bm.bid(bid_request, bid_headers)
 		.timeout(config.http_timeout)
 		.then(function(bid_response) {
 			jsonp += JSON.stringify(bid_response, null, 4);
@@ -64,7 +63,7 @@ function debug_req(response, headers, bid_request, callback) {
 	// track bid requests
 	// return winner to client
 
-	bm.bid(bid_request)
+	bm.bid(bid_request, headers)
 		.timeout(config.http_timeout)
 		.then(function(bid_response) {
 			html += "\nbid response: \n";
