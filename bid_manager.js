@@ -70,11 +70,15 @@ module.exports = {
 					h: imp.banner.h,
 				},
 				tagid: remote_tagid,
-				bidfloor: get_ext(imp, 'bidfloor') || imp.bidfloor,
 				ext: {
 					local_tagid: imp.tagid
 				}
 			};
+
+			var floor = get_ext(imp, 'bidfloor') || imp.bidfloor;
+			if (floor)
+				bid_imp.bidfloor = floor;
+
 			impid_to_bid[imp.id] = bid_imp;
 			bid.imp.push(bid_imp);
 		}
