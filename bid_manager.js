@@ -46,6 +46,9 @@ module.exports = {
 			}
 		}
 
+		if (breq.user)
+			bid.user = { id: breq.user.id };
+
 		var get_ext = function(obj, field) {
 			return obj && obj.ext && obj.ext[provider] && obj.ext[provider][field];
 		};
@@ -84,21 +87,36 @@ module.exports = {
 	cpm_round: function(cpm) {
 		return cpm; // by default don't round CPM
 	},
-	bid: function(breq) {
+	bid: function(breq, bid_headers) {
 		var adapter_promises = [];
 
 		// the max bid for each placement (tagid)
 		var max_bids = {};
 
+		var cookies = {};
+		if (bid_headers.cookie)
+			bid_headers.cookie.split(";").forEach(function(c) {
+				var k_v = c.split("=");
+				cookies[k_v[0].trim()] = k_v[1].trim();
+			});
+		//console.log("cookies", cookies);
+
 		var _ = this;
 		var impid_to_bid = {};
 		Object.keys(adapters).forEach(function(adapter_alias) {
 			var start_time = Date.now();
+
+			if (cookies['p_' + adapter_alias]) {
+				if (!breq.user)
+					breq.user = {};
+				breq.user.id = cookies['p_' + adapter_alias];
+			}
+
 			var sbid = _.sanitize_bid(breq, adapter_alias, impid_to_bid);
 
 			if (!sbid) {
 				// no placements defined for this adapter in the client request
-				console.log("no sbid: " + adapter_alias);
+				//console.log("no sbid: " + adapter_alias);
 				return;
 			}
 
