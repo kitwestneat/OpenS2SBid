@@ -173,8 +173,10 @@ module.exports = {
 				.then(function(resp) {
 					// we got an array of response bodies from http_get
 					var time_taken = Date.now() - start_time;
+					/*
 					ssb_utils.log(adapter_alias + ": bid completed in " +
 						time_taken + " ms");
+					*/
 
 					// go thru response bodies, convert to openrtb and then find the max one
 					resp.forEach(function(p) {
