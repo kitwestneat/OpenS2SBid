@@ -36,7 +36,6 @@ module.exports = {
 
 		var urls = [];
 		for (placement_id in size_to_impid) {
-			console.log('lacement:' + placement_id);
 			if (placement_id == "id")
 				continue;
 
@@ -50,12 +49,10 @@ module.exports = {
 				'&id=' + size_to_impid[placement_id].remote_id +
 				size_str);
 		}
-		console.log(urls);
 
 		return urls;
 	},
 	process: function(body, size_to_impid) {
-		console.log(body);
 		try {
 			var json_str = body.replace(re, '$1');
 			var an_resp = JSON.parse(json_str);
@@ -71,8 +68,6 @@ module.exports = {
 			};
 
 		var placement_id = decodeURIComponent(an_resp.callback_uid);
-		console.log(placement_id);
-		console.log(size_to_impid);
 
 		if (!size_to_impid[placement_id] || !size_to_impid[placement_id].sizes)
 			return {
