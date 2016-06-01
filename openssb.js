@@ -19,7 +19,7 @@ function handle_req(request, response) {
 
 		req_count++;
 		if (req_count == REPORT_AT) {
-			console.log("recieved ", req_count, "requests in ", (+Date.now) - req_start);
+			console.log("recieved ", req_count, "requests in ", (+Date.now()) - req_start, "ms");
 			req_start = +Date.now();
 			req_count = 0;
 		}
