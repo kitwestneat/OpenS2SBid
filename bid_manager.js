@@ -3,6 +3,8 @@ var ssb_utils = require("./ssb_utils");
 
 var config = require('./local/config');
 
+var debug = false;
+
 var adapters = {};
 var bid_timeout;
 
@@ -121,7 +123,8 @@ module.exports = {
 
 			if (!sbid) {
 				// no placements defined for this adapter in the client request
-				//console.log("no sbid: " + adapter_alias);
+				if (debug)
+				console.log("no sbid: " + adapter_alias);
 				return;
 			}
 
@@ -185,10 +188,9 @@ module.exports = {
 							return false;
 
 						var p_val = p.value();
-						/*
-						if (adapter_alias == 'pulsepoint')
+						if (debug && adapter_alias == 'pulsepoint')
 							console.log('pp resp', p_val);
-							*/
+
 						if (Array.isArray(p_val))
 							p_val = p_val[0];
 

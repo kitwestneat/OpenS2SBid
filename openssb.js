@@ -5,7 +5,7 @@ var bm = require('./bid_manager');
 var config = require('./local/config');
 
 var req_count = 0;
-var req_start = Date.now();
+var req_start = +Date.now();
 var REPORT_AT = 1000;
 
 // testreq
@@ -19,8 +19,8 @@ function handle_req(request, response) {
 
 		req_count++;
 		if (req_count == REPORT_AT) {
-			console.log("recieved ", req_count, "requests in ", Date.now - req_start);
-			req_start = Date.now();
+			console.log("recieved ", req_count, "requests in ", (+Date.now) - req_start);
+			req_start = +Date.now();
 			req_count = 0;
 		}
 
