@@ -124,7 +124,7 @@ module.exports = {
 			if (!sbid) {
 				// no placements defined for this adapter in the client request
 				if (debug)
-				console.log("no sbid: " + adapter_alias);
+					console.log("no sbid: " + adapter_alias);
 				return;
 			}
 
@@ -185,7 +185,7 @@ module.exports = {
 					// go thru response bodies, convert to openrtb and then find the max one
 					resp.forEach(function(p) {
 						if (!p.isFulfilled())
-							return false;
+							return;
 
 						var p_val = p.value();
 						if (debug && adapter_alias == 'pulsepoint')
@@ -193,6 +193,9 @@ module.exports = {
 
 						if (Array.isArray(p_val))
 							p_val = p_val[0];
+
+						if (!p_val)
+							return;
 
 						bid_state._url = p_val.url;
 						try {
@@ -205,23 +208,23 @@ module.exports = {
 						if (bresp && bresp.error) {
 							ssb_utils.log(adapter_alias + ": error: " +
 								JSON.stringify(bresp.error));
-							return false;
+							return;
 						}
 
 						if (!bresp) {
 							ssb_utils.log(adapter_alias +
 								": error: no response found");
-							return false;
+							return;
 						}
 
 						if (!bresp.seatbid || !bresp.seatbid.length ||
 							!bresp.seatbid[0].bid)
-							return false;
+							return;
 
 						// find the highest imp bid for each placement
-						for (seat in bresp.seatbid) {
-							for (bid_idx in bresp.seatbid[seat].bid) {
-								var bid = bresp.seatbid[seat].bid[bid_idx];
+						for (seat_idx in bresp.seatbid) {
+							for (bid_idx in bresp.seatbid[seat_idx].bid) {
+								var bid = bresp.seatbid[seat_idx].bid[bid_idx];
 								var req_bid = impid_to_bid[bid.impid];
 								var tagid = req_bid.ext.local_tagid;
 
@@ -231,8 +234,14 @@ module.exports = {
 									bid.id = adapter_alias + ":" + bid.id;
 									if (!bid.ext)
 										bid.ext = {};
+
+									// save bidid and seatid for macro expansion
+									bid.ext["bidid"] = bresp.bidid;
+									bid.ext["seatid"] = bresp.seatbid[seat_idx].seat;
+
 									bid.ext["ssb_tagid"] = tagid;
 									bid.ext["ssb_provider"] = adapter_alias;
+
 									bid.w = bid.w || req_bid.banner.w;
 									bid.h = bid.h || req_bid.banner.h;
 
@@ -251,8 +260,31 @@ module.exports = {
 		return Promise.all(adapter_promises).then(function() {
 			var bids = [];
 
-			for (tag in max_bids)
-				bids.push(max_bids[tag]);
+			for (tag in max_bids) {
+				var cur_bid = max_bids[tag];
+				if (!cur_bid)
+					continue;
+
+				["nurl", "adm"].forEach(function(str_idx) {
+					if (!cur_bid[str_idx])
+						return;
+
+					cur_bid[str_idx] = cur_bid[str_idx]
+						.replace('${AUCTION_ID}', breq.id)
+						.replace('${AUCTION_BID_ID}', cur_bid.ext.bidid || '')
+						.replace('${AUCTION_IMP_ID}', cur_bid.impid)
+						.replace('${AUCTION_SEAT_ID}', cur_bid.ext.seatid || '')
+						.replace('${AUCTION_AD_ID}', cur_bid.adid || '')
+						.replace('${AUCTION_PRICE}', cur_bid.price)
+						.replace('${AUCTION_CURRENCY}', "USD");
+					console.log(cur_bid[str_idx]);
+
+					delete cur_bid.ext.bidid;
+					delete cur_bid.ext.seatid;
+				});
+
+				bids.push(cur_bid);
+			}
 
 			return {
 				id: breq.id,
