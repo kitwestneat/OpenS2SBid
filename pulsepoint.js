@@ -1,3 +1,4 @@
+var Promise = require("bluebird");
 var utils = require('./ssb_utils');
 var bid_url;
 var qps_limit;
@@ -11,8 +12,8 @@ var req_reset = function() {
 };
 req_reset();
 
-var req_limiter = function() {
-	req_count++;
+var req_limiter = function(imp_cnt) {
+	req_count += imp_cnt;
 	if (req_count < qps_limit)
 		return;
 
@@ -26,13 +27,13 @@ var req_limiter = function() {
 	if (req_count == qps_limit)
 		console.log("pulsepoint adapter hit qps limit", req_count, qps_limit);
 
-	return Promise.resolve(null);
+	return [Promise.resolve(false)];
 }
 
 module.exports = {
 	bid: function(breq, full_breq) {
 		if (qps_limit) {
-			var p = req_limiter();
+			var p = req_limiter(breq.imp.length);
 
 			if (p)
 				return p;
