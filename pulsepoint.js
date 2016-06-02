@@ -51,7 +51,7 @@ module.exports = {
 		if (!body)
 			return {};
 
-		console.log(util.inspect(body, false, null)));
+		console.log(util.inspect(body, false, null));
 		return body;
 	},
 	set_config: function(config) {
