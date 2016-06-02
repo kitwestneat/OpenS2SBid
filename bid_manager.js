@@ -153,6 +153,14 @@ module.exports = {
 			}
 			var http_get;
 
+/*
+			try {
+			debug = sbid.site.domain.indexOf('pbh2.com') != -1;
+			} catch(e) {
+				console.log(e);
+			}
+			*/
+
 			if (sbid.device.ua)
 				http_get = function(url) { return http_get_fn(url, { 'User-Agent' : sbid.device.ua }); };
 			else
