@@ -51,7 +51,10 @@ module.exports = {
 		if (!body)
 			return {};
 
-		console.log(util.inspect(body, false, null));
+		try {
+		console.log("seatbid count", body.seatbid.length, "bid lengths", body.seatbid.map(function(s) { return s.bid.length; }));
+		} catch(e) {
+		}
 		return body;
 	},
 	set_config: function(config) {

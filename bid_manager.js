@@ -209,7 +209,7 @@ module.exports = {
 						try {
 							var bresp = adapters[adapter_alias].process(p_val.body, bid_state);
 						} catch(e) {
-							console.log(e.stack());
+							console.log(e);
 							bresp = { error: e.toString() };
 						}
 
