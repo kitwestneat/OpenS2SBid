@@ -18,14 +18,9 @@ var req_limiter = function(imp_cnt) {
 		return;
 
 	if (utils.ts() != req_start) {
-		if (req_count > qps_limit)
-			console.log("pulsepoint adapter max qps limit", req_count, qps_limit);
 		req_reset();
 		return;
 	}
-
-	if (req_count == qps_limit)
-		console.log("pulsepoint adapter hit qps limit", req_count, qps_limit);
 
 	return [Promise.resolve(false)];
 }
