@@ -285,7 +285,7 @@ module.exports = {
 						.replace('${AUCTION_AD_ID}', cur_bid.adid || '')
 						.replace('${AUCTION_PRICE}', cur_bid.price)
 						.replace('${AUCTION_CURRENCY}', "USD");
-					console.log(cur_bid[str_idx]);
+					//console.log(cur_bid[str_idx]);
 
 					delete cur_bid.ext.bidid;
 					delete cur_bid.ext.seatid;
