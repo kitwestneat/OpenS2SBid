@@ -14,6 +14,7 @@ req_reset();
 
 var req_limiter = function(imp_cnt) {
 	req_count += imp_cnt;
+	//console.log("req_cnt", req_count, "qps", qps_limit, req_start);
 	if (req_count < qps_limit)
 		return;
 
@@ -67,6 +68,7 @@ module.exports = {
 	},
 	set_config: function(config) {
 		bid_url = config.bid_url || bid_url;
-		qps_limit = config.qps_limit;
+		//qps_limit = config.qps_limit;
+		qps_limit = 50;
 	},
 }
