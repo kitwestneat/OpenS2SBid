@@ -35,12 +35,25 @@ module.exports = {
 		}
 
 		// pulsepoint doesn't use tag IDs for s2s
+		var tag_imps = {};
 		breq.imp.forEach(function(i) {
 			delete i.tagid;
+			var tagid = i.ext.local_tagid;
+			if (!tag_imps[tagid])
+				tag_imps[tagid] = [];
+
+			tag_imps[tagid].push(i);
 		});
 
-		var p = utils.http_post({ url: bid_url, json: true, body: breq });
-		return [p];
+		var promises = [];
+		for (tag in tag_imps) {
+			breq.id++;
+			breq.imp = tag_imps[tag];
+			var p = utils.http_post({ url: bid_url, json: true, body: breq });
+			promises.push(p);
+		}
+
+		return promises;
 	},
 	process: function(body) {
 		if (!body)
