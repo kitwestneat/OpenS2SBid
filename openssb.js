@@ -1,10 +1,3 @@
-var dns = require('dns'),
-    dnscache = require('dnscache')({
-	        "enable" : true,
-			        "ttl" : 300,
-					        "cachesize" : 1000
-							    });
-								    
 var http = require('http');
 var url = require('url');
 var bm = require('./bid_manager');
