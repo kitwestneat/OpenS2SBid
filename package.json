@@ -1,9 +1,13 @@
 {
-"name": "OpenSSB",
-"version": "1.0.0",
-"description": "An open-source server side bidding project.",
-"bugs": { "url":"https://github.com/kitwestneat/OpenS2SBid", "email": "kit@pbh-network.com" },
-"dependencies":
-  { "bluebird": "*",
-    "request": "*" }
+  "name": "OpenSSB",
+  "version": "1.0.0",
+  "description": "An open-source server side bidding project.",
+  "bugs": {
+    "url": "https://github.com/kitwestneat/OpenS2SBid",
+    "email": "kit@pbh-network.com"
+  },
+  "dependencies": {
+    "bluebird": "*",
+    "request": "*"
+  }
 }

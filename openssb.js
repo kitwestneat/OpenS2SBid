@@ -1,3 +1,10 @@
+var dns = require('dns'),
+    dnscache = require('dnscache')({
+	        "enable" : true,
+			        "ttl" : 300,
+					        "cachesize" : 1000
+							    });
+								    
 var http = require('http');
 var url = require('url');
 var bm = require('./bid_manager');
@@ -7,6 +14,8 @@ var config = require('./local/config');
 var req_count = 0;
 var req_start = +Date.now();
 var REPORT_AT = 1000;
+
+http.globalAgent.maxSockets = 1024;
 
 // testreq
 // http://localhost:8888/?callback=pbh_sovrn_process_bid&br=%7B%22id%22%3A100%2C%22imp%22%3A%5B%7B%22id%22%3A101%2C%22banner%22%3A%7B%22w%22%3A%22320%22%2C%22h%22%3A%2250%22%7D%2C%22tagid%22%3A316627%7D%2C%7B%22id%22%3A102%2C%22banner%22%3A%7B%22w%22%3A%22300%22%2C%22h%22%3A%22250%22%7D%2C%22tagid%22%3A316060%7D%2C%7B%22id%22%3A103%2C%22banner%22%3A%7B%22w%22%3A%22320%22%2C%22h%22%3A%2250%22%7D%2C%22tagid%22%3A316626%7D%2C%7B%22id%22%3A104%2C%22banner%22%3A%7B%22w%22%3A%22300%22%2C%22h%22%3A%22250%22%7D%2C%22tagid%22%3A316053%7D%5D%2C%22site%22%3A%7B%22domain%22%3A%22runt-of-the-web.com%22%2C%22page%22%3A%22%2F%22%7D%7D

@@ -1,6 +1,7 @@
 var Promise = require("bluebird");
 var utils = require('./ssb_utils');
 var bid_url;
+var hostname;
 var qps_limit;
 
 var req_count;
@@ -35,24 +36,28 @@ module.exports = {
 				return p;
 		}
 
+		breq.tmax = 500;
+
 		// pulsepoint doesn't use tag IDs for s2s
-		var tag_imps = {};
-		breq.imp.forEach(function(i) {
-			delete i.tagid;
-			var tagid = i.ext.local_tagid;
-			if (!tag_imps[tagid])
-				tag_imps[tagid] = [];
-
-			tag_imps[tagid].push(i);
-		});
-
+		var all_imps = breq.imp;
 		var promises = [];
-		for (tag in tag_imps) {
+		var start = utils.ts();
+		all_imps.forEach(function(i) {
+			delete i.tagid;
+
 			breq.id++;
-			breq.imp = tag_imps[tag];
-			var p = utils.http_post({ url: bid_url, json: true, body: breq });
-			promises.push(p);
-		}
+			breq.imp = [i];
+			//console.log(breq.id, "sent at", start);
+			var opts = { url: bid_url, json: true, body: breq };
+			if (hostname)
+				opts['headers'] = { 'Host': hostname };
+
+			var p = utils.http_post(opts);
+			//p.then(function(id) { console.log(id, "received in", utils.ts() - start )}.bind(this, breq.id));
+			promises.push(p.timeout(800).catch(Promise.TimeoutError, function(e) {
+					console.log("timeout!");
+				}));
+		});
 
 		return promises;
 	},
@@ -68,7 +73,12 @@ module.exports = {
 	},
 	set_config: function(config) {
 		bid_url = config.bid_url || bid_url;
-		//qps_limit = config.qps_limit;
-		qps_limit = 50;
+
+		if (typeof bid_url != 'string' && bid_url.hostname) {
+			hostname = bid_url.hostname;
+			bid_url = bid_url.url;
+		}
+
+		qps_limit = config.qps_limit;
 	},
 }
