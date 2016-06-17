@@ -52,6 +52,7 @@ module.exports = {
 			if (hostname)
 				opts['headers'] = { 'Host': hostname };
 
+			//console.log("impid", i.id);
 			var p = utils.http_post(opts);
 			//p.then(function(id) { console.log(id, "received in", utils.ts() - start )}.bind(this, breq.id));
 			promises.push(p.timeout(800).catch(Promise.TimeoutError, function(e) {

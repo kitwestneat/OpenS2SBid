@@ -234,6 +234,11 @@ module.exports = {
 							for (bid_idx in bresp.seatbid[seat_idx].bid) {
 								var bid = bresp.seatbid[seat_idx].bid[bid_idx];
 								var req_bid = impid_to_bid[bid.impid];
+								if (!req_bid) {
+									console.log("unknown imp id", bid);
+									continue;
+								}
+
 								var tagid = req_bid.ext.local_tagid;
 
 								bid.price = cpm_round_fn(bid.price);
