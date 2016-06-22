@@ -103,8 +103,8 @@ module.exports = {
 		if (bid_headers.cookie)
 			bid_headers.cookie.split(";").forEach(function(c) {
 				var k_v = c.split("=");
-                if (k_v.length > 1)
-                    cookies[k_v[0].trim()] = k_v[1].trim();
+				if (k_v.length > 1)
+					cookies[k_v[0].trim()] = k_v[1].trim();
 			});
 		//console.log("cookies", cookies);
 
@@ -176,12 +176,18 @@ module.exports = {
 			// Promise.all normally shortcircuits on a fail, reflect waits for all promises to settle
 			adapter_promises.push(Promise.all(promises.map(function(p) {
 					try {
-						return p.reflect();
+						/* reflect makes promise successful even if it timesout  */
+						return p
+							   .timeout(bid_timeout)
+							   .catch(Promise.TimeoutError, function(e) {
+									var time_taken = Date.now() - start_time;
+									ssb_utils.log(adapter_alias + ": bid timeout after " + time_taken + " ms");
+							   })
+							   .reflect();
 					} catch(e) {
 						console.log("error with ", adapter_alias, e);
 					}
 				}))
-				.timeout(bid_timeout)
 				.then(function(resp) {
 					// we got an array of response bodies from http_get
 					var time_taken = Date.now() - start_time;
@@ -263,9 +269,6 @@ module.exports = {
 							}
 						}
 					});
-				}).catch(Promise.TimeoutError, function(e) {
-					var time_taken = Date.now() - start_time;
-					ssb_utils.log(adapter_alias + ": bid timeout after " + time_taken + " ms");
 				}));
 		});
 

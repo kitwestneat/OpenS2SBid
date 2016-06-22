@@ -1,8 +1,11 @@
 var Promise = require("bluebird");
 var utils = require('./ssb_utils');
+
+// CONFIG
 var bid_url;
 var hostname;
 var qps_limit;
+var timeout;
 
 var req_count;
 var req_start;
@@ -36,7 +39,7 @@ module.exports = {
 				return p;
 		}
 
-		breq.tmax = 500;
+		breq.tmax = timeout;
 
 		// pulsepoint doesn't use tag IDs for s2s
 		var all_imps = breq.imp;
@@ -55,7 +58,7 @@ module.exports = {
 			//console.log("impid", i.id);
 			var p = utils.http_post(opts);
 			//p.then(function(id) { console.log(id, "received in", utils.ts() - start )}.bind(this, breq.id));
-			promises.push(p.timeout(800).catch(Promise.TimeoutError, function(e) {
+			promises.push(p.timeout(timeout+200).catch(Promise.TimeoutError, function(e) {
 					console.log("timeout!");
 				}));
 		});
@@ -81,5 +84,6 @@ module.exports = {
 		}
 
 		qps_limit = config.qps_limit;
+		timeout = config.timeout || 500;
 	},
 }
