@@ -37,8 +37,9 @@ module.exports = {
 			bid.site = {
 				domain: breq.site.domain,
 				page: breq.site.page,
-				ref: breq.site.ref,
 			}
+			if (breq.site.ref)
+				bid.site.ref = breq.site.ref;
 		}
 
 		if (breq.device) {

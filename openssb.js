@@ -32,6 +32,11 @@ function handle_req(request, response) {
 		bid_request.device.ua = request.headers['user-agent'];
 		bid_request.device.ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
 
+		if (typeof bid_request.device.ip == 'string')
+			bid_request.device.ip = bid_request.device.ip.split(',')[0];
+		else
+			throw "bad ip address: " + bid_request.device.ip
+
 		response.setHeader('Cache-Control', 'no-cache');
 		if (debug)
 			debug_req(response, request.headers, bid_request, callback);
@@ -41,6 +46,9 @@ function handle_req(request, response) {
 	} catch (e) {
 		var msg = 'bad request url: ' + request.url + ' e: ' + e + "\n";
 		msg += e.stack + "\n";
+		if (typeof parsed != 'undefined')
+			msg += "parsed: " + JSON.stringify(parsed);
+
 		console.log(msg);
 		response.statusCode = 500;
 		response.end(msg);
