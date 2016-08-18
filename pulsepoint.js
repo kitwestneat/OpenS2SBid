@@ -55,6 +55,8 @@ module.exports = {
 			if (hostname)
 				opts['headers'] = { 'Host': hostname };
 
+			//console.log(breq);
+
 			//console.log("impid", i.id);
 			var p = utils.http_post(opts);
 			//p.then(function(id) { console.log(id, "received in", utils.ts() - start )}.bind(this, breq.id));
