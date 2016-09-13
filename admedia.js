@@ -5,7 +5,7 @@ var hostname;
 
 module.exports = {
 	bid: function(breq, full_breq) {
-		console.log(JSON.stringify(breq, null, 4));
+		//console.log(JSON.stringify(breq, null, 4));
 
 		return [utils.http_post({
 			url: bid_url,
@@ -18,7 +18,7 @@ module.exports = {
 		if (!body)
 			return;
 
-		console.log('body', body);
+		//console.log('body', body);
         if (typeof body == 'string')
             body = JSON.parse(body);
 
