@@ -46,6 +46,7 @@ module.exports = {
 			bid.device = {
 				ua: breq.device.ua,
 				ip: breq.device.ip,
+				language: breq.device.language,
 			}
 		}
 

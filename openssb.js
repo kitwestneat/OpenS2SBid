@@ -15,6 +15,11 @@ http.globalAgent.maxSockets = 1024;
 function handle_req(request, response) {
 	try {
 		var parsed = url.parse(request.url, true);
+        if (!parsed.query.br) {
+            response.statusCode = 500;
+            response.end();
+            return;
+        }
 		var bid_request = JSON.parse(parsed.query.br);
 		var callback = parsed.query.callback || 'callback';
 		var debug = parsed.query.debug;
@@ -29,6 +34,7 @@ function handle_req(request, response) {
 		if (!bid_request.device)
 			bid_request.device = {};
 
+		bid_request.device.language = request.headers['accept-language'];
 		bid_request.device.ua = request.headers['user-agent'];
 		bid_request.device.ip = request.headers['x-forwarded-for'] || request.socket.remoteAddress;
 
