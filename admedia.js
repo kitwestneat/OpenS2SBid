@@ -16,7 +16,7 @@ module.exports = {
 	},
 	process: function(body) {
 		if (!body)
-			return;
+			return {};
 
 		//console.log('body', body);
         if (typeof body == 'string')
