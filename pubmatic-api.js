@@ -44,10 +44,13 @@ function get_tz() {
 }
 
 function make_url(param_obj) {
-    var new_url = bid_url + '?ranreq=' + Math.random();
+    var new_url = bid_url + '?';
+    var amp = '';
 
-    for (key in param_obj)
-        new_url += '&' + key + '=' + param_obj[key];
+    for (key in param_obj) {
+        new_url += amp + key + '=' + param_obj[key];
+        amp = '&';
+    }
 
     return new_url;
 }
@@ -114,7 +117,7 @@ module.exports = {
             seatbid: [{ bid: [{
                 id: bid.oid,
                 impid: imp_id,
-                price: 6 || bid.ecpm,
+                price: bid.ecpm,
                 adm: bid.creative_tag,
                 nurl: bid.tracking_url,
             }] }],
