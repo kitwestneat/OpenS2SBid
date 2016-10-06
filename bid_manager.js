@@ -29,7 +29,7 @@ var bid_timeout;
 module.exports = {
 	sanitize_bid: function(breq, provider, impid_to_bid) {
 		var bid = {
-			id: breq.id,
+			id: ""+breq.id,
 			imp: [],
 		};
 
@@ -68,12 +68,12 @@ module.exports = {
 
 			// imp.tagid is local (pub) placement id, imp.ext.provider.tagid is remote placement id
 			var bid_imp = {
-				id: imp.id,
+				id: ""+imp.id,
 				banner: {
-					w: imp.banner.w,
-					h: imp.banner.h,
+					w: +imp.banner.w,
+					h: +imp.banner.h,
 				},
-				tagid: remote_tagid,
+				tagid: ""+remote_tagid,
 				ext: {
 					local_tagid: imp.tagid
 				}
