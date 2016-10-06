@@ -20,7 +20,7 @@ function handle_req(request, response) {
             response.end();
             return;
         }
-		var bid_request = JSON.parse(parsed.query.br);
+		var bid_request = JSON.parse(decodeURIComponent(parsed.query.br));
 		var callback = parsed.query.callback || 'callback';
 		var debug = parsed.query.debug;
 
