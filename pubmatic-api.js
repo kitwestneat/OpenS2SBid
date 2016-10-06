@@ -77,23 +77,23 @@ module.exports = {
             url_list.push(url);
         }
 
-        console.log("bid_url", bid_url);
+        //console.log("bid_url", bid_url);
         var headers = {
             'User-Agent': breq.device.ua,
             'Accept-Language': breq.device.language,
             'RLNClientIpAddr': breq.device.ip,
-            'KADUSERCOOKIE': breq.user.id,
         };
+        if (breq.user)
+            headers['KADUSERCOOKIE'] = breq.user.id;
+
 		return url_list.map(function(url) {
             var start = Date.now();
-            console.log('start', start);
             return utils.real_http_get({
                 url: url,
                 hostname: hostname,
             }, headers).then(function(resp) {
                 var end = Date.now();
-                console.log(url);
-                console.log('end', end, 'diff', end - start);
+                //console.log(url);
                 return resp;
             });
         });
@@ -111,6 +111,10 @@ module.exports = {
             return {};
 
         var bid = body["PubMatic_Bid"];
+
+        ///XXX
+        if (false && bid.ecpm > 0)
+            console.log(bid);
 
 		return {
             id: bid.oid,
