@@ -228,8 +228,6 @@ module.exports = {
 						}
 
 						if (!bresp) {
-							ssb_utils.log(adapter_alias +
-								": error: no response found");
 							return;
 						}
 
